@@ -1,6 +1,7 @@
 from html import escape
 from psutil import virtual_memory, cpu_percent, disk_usage
 from time import time
+from time import monotonic
 from asyncio import iscoroutinefunction, gather
 from pyrogram.types import InlineKeyboardButton
 from pyrogram.enums import ButtonStyle
@@ -113,6 +114,14 @@ def get_readable_time(seconds: int):
             result += f"{int(period_value)}{period_name}"
     return result
 
+def get_elapsed_time(task):
+    start_time = getattr(task.listener, "task_start_time", None)
+
+    if start_time is None:
+        return "0s"
+
+    elapsed_seconds = int(monotonic() - start_time)
+    return get_readable_time(elapsed_seconds)
 
 def time_to_seconds(time_duration):
     try:
@@ -210,6 +219,7 @@ async def get_readable_message(sid, is_user, page_no=1, status="All", page_step=
                 msg += f"\n<b>Count:</b> {count}"
             msg += f"\n<b>Size:</b> {task.size()}"
             msg += f"\n<b>Speed:</b> {task.speed()}"
+            msg += f"\n<b>Elapsed:</b> {get_elapsed_time(task)}"
             msg += f"\n<b>ETA:</b> {task.eta()}"
             if (
                 tstatus == MirrorStatus.STATUS_DOWNLOAD
@@ -228,7 +238,7 @@ async def get_readable_message(sid, is_user, page_no=1, status="All", page_step=
             msg += f" | <b>Time: </b>{task.seeding_time()}"
         else:
             msg += f"\n<b>Size: </b>{task.size()}"
-        msg += f"\n<b>Gid: </b><code>{task.gid()}</code>\n\n"
+        msg += f"\n<b>Gid: </b><code>/c {task.gid()}</code>\n\n"
         task_gids.append((index + start_position, task.listener.mid))
 
     if len(msg) == 0:
