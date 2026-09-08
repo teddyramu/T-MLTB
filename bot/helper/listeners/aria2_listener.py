@@ -166,7 +166,7 @@ async def _on_download_stopped(_, data):
     gid = data["params"][0]["gid"]
     await sleep(4)
     if task := await get_task_by_gid(gid):
-        await task.listener.on_download_error("Dead torrent!")
+        await task.listener.on_download_error("Dead torrent!, Try <code>/qm</code>")
 
 
 async def _on_download_error(api, data):
